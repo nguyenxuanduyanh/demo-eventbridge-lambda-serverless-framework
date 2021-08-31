@@ -6,6 +6,7 @@
     "aws-sdk": "^2.978.0",
     "express": "^4.17.1",
     "serverless-http": "^2.7.0",
-    "serverless-offline": "^8.0.0"
+    "serverless-offline": "^8.0.0",
+    "serverless-offline-aws-eventbridge": "^1.6.3"
   }
 }

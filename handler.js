@@ -2,7 +2,10 @@ const serverless = require("serverless-http");
 const express = require("express");
 const app = express();
 const AWS = require('aws-sdk')
-var eventbridge = new AWS.EventBridge({ apiVersion: '2015-10-07' });
+var eventbridge = new AWS.EventBridge({
+  apiVersion: '2015-10-07',
+  // endpoint: 'http://127.0.0.1:4010',
+});
 
 app.post("/signup", async (req, res, next) => {
   const bodyData = JSON.parse(req.apiGateway.event.body);
@@ -15,7 +18,7 @@ app.post("/signup", async (req, res, next) => {
           state: bodyData.state
         }),
         DetailType: 'UserSignup',
-        EventBusName: 'default',
+        EventBusName: 'signup',
         Source: 'custom.myATMapp',
         Time: new Date(),
       },
@@ -25,7 +28,6 @@ app.post("/signup", async (req, res, next) => {
 
 
   await eventbridge.putEvents(params).promise()
-
   return res.status(200).json({
     message: "Requested",
   });
