@@ -87,6 +87,9 @@ functions:
               state:
                 - fail
 
+  hello:
+    handler: consumer.hello
+
   invokeStepFunction:
     handler: handler.handler
     environment:
@@ -116,4 +119,9 @@ stepFunctions:
                   DetailType: UserSignup
                   EventBusName: signup
                   Source: custom.myATMapp
+            Next: SecondState
+          SecondState:
+            Type: Task
+            Resource: 
+              Fn::GetAtt: [hello, Arn]
             End: true
