@@ -16,11 +16,13 @@ provider:
         - Effect: Allow
           Action: # Gives permission to DynamoDB tables in a specific region
             - events:PutEvents
+            - states:StartExecution
           Resource: '*'
 
 plugins:
   - serverless-offline
   - serverless-offline-aws-eventbridge
+  - serverless-step-functions
 
 custom:
   serverless-offline-aws-eventbridge:
@@ -40,10 +42,15 @@ resources:
       Type: AWS::Events::EventBus
       Properties:
         Name: signup
+  Outputs:
+    MyStateMachine:
+      Description: The ARN of the example state machine
+      Value:
+        Ref: MyStateMachine
 
 functions:
-  api:
-    handler: handler.handler
+  invokeEventBridge:
+    handler: invokeEventBridge.handler
     events:
       - http:
           path: /
@@ -79,3 +86,34 @@ functions:
             detail:
               state:
                 - fail
+
+  invokeStepFunction:
+    handler: handler.handler
+    environment:
+      statemachine_arn: ${self:resources.Outputs.MyStateMachine.Value}
+    events:
+      - http:
+          path: /
+          method: ANY
+      - http:
+          path: /{proxy+}
+          method: ANY
+
+stepFunctions:
+  stateMachines:
+    yourWateMachine:
+      name: myStateMachine
+      definition:
+        Comment: "An example of the Amazon States Language using wait states"
+        StartAt: FirstState
+        States:
+          FirstState:
+            Type: Task
+            Resource: 'arn:aws:states:::events:putEvents'
+            Parameters:
+              Entries:
+                - Detail.$: $.Detail
+                  DetailType: UserSignup
+                  EventBusName: signup
+                  Source: custom.myATMapp
+            End: true

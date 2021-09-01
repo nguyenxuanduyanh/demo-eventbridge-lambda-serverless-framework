@@ -1,37 +1,22 @@
 const serverless = require("serverless-http");
 const express = require("express");
 const app = express();
-const AWS = require('aws-sdk')
-var eventbridge = new AWS.EventBridge({
-  apiVersion: '2015-10-07',
-  // endpoint: 'http://127.0.0.1:4010',
-});
+const aws = require('aws-sdk')
+var stepfunctions = new aws.StepFunctions()
 
 app.post("/signup", async (req, res, next) => {
-  const bodyData = JSON.parse(req.apiGateway.event.body);
-  const params =
-  {
-    Entries: [ /* required */
-      {
-        Detail: JSON.stringify({
-          email: bodyData.email,
-          state: bodyData.state
-        }),
-        DetailType: 'UserSignup',
-        EventBusName: 'signup',
-        Source: 'custom.myATMapp',
-        Time: new Date(),
-      },
-      /* more items */
-    ]
+  const fullData = JSON.parse(req.apiGateway.event.body);
+  const detailEventBr = { Detail: { state: fullData.state } }
+  var params = {
+    stateMachineArn: process.env.statemachine_arn,
+    input: JSON.stringify({ ...fullData, ...detailEventBr })
   };
 
-
-  await eventbridge.putEvents(params).promise()
+  await stepfunctions.startExecution(params).promise();
   return res.status(200).json({
     message: "Requested",
   });
-});
+})
 
 app.use((req, res, next) => {
   return res.status(404).json({

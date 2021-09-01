@@ -8,5 +8,8 @@
     "serverless-http": "^2.7.0",
     "serverless-offline": "^8.0.0",
     "serverless-offline-aws-eventbridge": "^1.6.3"
+  },
+  "devDependencies": {
+    "serverless-step-functions": "^3.0.0"
   }
 }
